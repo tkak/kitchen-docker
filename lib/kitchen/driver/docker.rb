@@ -128,7 +128,11 @@ module Kitchen
           eos
           config[:disable_upstart] ? disable_upstart + packages : packages
         when 'rhel', 'centos', 'fedora'
-          <<-eos
+          proxy = ''
+          proxy << "RUN echo 'proxy=#{config[:http_proxy]}' >> /etc/yum.conf\n" if config[:http_proxy]
+          proxy << "ENV http_proxy=#{config[:http_proxy]}\n" if config[:http_proxy]
+          proxy << "ENV https_proxy=#{config[:https_proxy]}\n" if config[:https_proxy]
+          proxy + <<-eos
             RUN yum clean all
             RUN yum install -y sudo openssh-server openssh-clients which curl
             RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
